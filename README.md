@@ -221,7 +221,7 @@ All tables have **Row Level Security (RLS)** enabled for data isolation.
 
 ## 📄 License
 
-This project is for educational and portfolio purposes.
+This project is owned by Aditya & tarun and portfolio purposes.
 
 ---
 
