@@ -1,0 +1,192 @@
+import { useState } from 'react';
+import { supabase } from '../lib/supabaseClient';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
+import Head from 'next/head';
+import { motion } from 'framer-motion';
+
+export default function Login() {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [showForgot, setShowForgot] = useState(false);
+    const [resetSent, setResetSent] = useState(false);
+    const router = useRouter();
+
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+
+        const { data, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+        if (loginError) {
+            setError(loginError.message);
+        } else if (data.session) {
+            // Check role and redirect
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', data.session.user.id)
+                .single();
+
+            if (profile?.role === 'user') {
+                router.push('/map');
+            } else {
+                router.push('/dashboard');
+            }
+        }
+        setLoading(false);
+    };
+
+    const handleForgotPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email) {
+            setError('Please enter your email first');
+            return;
+        }
+        setLoading(true);
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/login`,
+        });
+        if (error) {
+            setError(error.message);
+        } else {
+            setResetSent(true);
+        }
+        setLoading(false);
+    };
+
+    return (
+        <div className="min-h-screen bg-dark-950 flex items-center justify-center relative overflow-hidden">
+            <Head>
+                <title>Sign In | ChargeConnect</title>
+            </Head>
+
+            {/* Background */}
+            <div className="absolute inset-0 grid-bg opacity-20" />
+            <div className="absolute top-1/4 -left-32 w-96 h-96 bg-emerald-500/10 rounded-full blur-[128px]" />
+            <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-cyan-500/10 rounded-full blur-[128px]" />
+
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="relative z-10 w-full max-w-md mx-4"
+            >
+                <div className="bg-gray-900/80 backdrop-blur-xl rounded-3xl p-8 border border-white/5 shadow-2xl">
+                    {/* Header */}
+                    <div className="text-center mb-8">
+                        <Link href="/" className="inline-flex items-center gap-2 mb-6">
+                            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            </div>
+                        </Link>
+                        <h2 className="text-2xl font-bold text-white">
+                            {showForgot ? 'Reset Password' : 'Welcome back'}
+                        </h2>
+                        <p className="text-gray-500 mt-2 text-sm">
+                            {showForgot ? 'Enter your email to receive a reset link' : 'Sign in to manage your EV stations'}
+                        </p>
+                    </div>
+
+                    {error && (
+                        <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+                            {error}
+                        </div>
+                    )}
+
+                    {resetSent ? (
+                        <div className="text-center py-8">
+                            <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <p className="text-white font-medium mb-2">Check your email</p>
+                            <p className="text-gray-500 text-sm mb-6">We sent a password reset link to {email}</p>
+                            <button onClick={() => { setShowForgot(false); setResetSent(false); }} className="text-emerald-400 hover:text-emerald-300 font-medium text-sm">
+                                ← Back to sign in
+                            </button>
+                        </div>
+                    ) : showForgot ? (
+                        <form onSubmit={handleForgotPassword} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-1.5">Email</label>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all text-sm"
+                                    placeholder="you@example.com"
+                                    required
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-xl font-semibold hover:from-emerald-500 hover:to-emerald-400 transition-all disabled:opacity-50"
+                            >
+                                {loading ? 'Sending...' : 'Send Reset Link'}
+                            </button>
+                            <button type="button" onClick={() => setShowForgot(false)} className="w-full text-center text-gray-500 hover:text-gray-300 text-sm">
+                                ← Back to sign in
+                            </button>
+                        </form>
+                    ) : (
+                        <form onSubmit={handleLogin} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-1.5">Email</label>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all text-sm"
+                                    placeholder="you@example.com"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-1.5">Password</label>
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all text-sm"
+                                    placeholder="Enter your password"
+                                    required
+                                />
+                            </div>
+
+                            <div className="text-right">
+                                <button type="button" onClick={() => setShowForgot(true)} className="text-sm text-emerald-400 hover:text-emerald-300">
+                                    Forgot password?
+                                </button>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-xl font-semibold hover:from-emerald-500 hover:to-emerald-400 transition-all disabled:opacity-50 shadow-lg shadow-emerald-500/20"
+                            >
+                                {loading ? 'Signing in...' : 'Sign In'}
+                            </button>
+                        </form>
+                    )}
+
+                    {!showForgot && !resetSent && (
+                        <div className="mt-6 text-center">
+                            <p className="text-gray-500 text-sm">
+                                Don&apos;t have an account?{' '}
+                                <Link href="/signup" className="text-emerald-400 hover:text-emerald-300 font-medium">
+                                    Sign up
+                                </Link>
+                            </p>
+                        </div>
+                    )}
+                </div>
+            </motion.div>
+        </div>
+    );
+}
