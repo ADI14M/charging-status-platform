@@ -1,13 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-
-const INDIAN_CITIES = [
-    'New Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Hyderabad', 'Pune',
-    'Kolkata', 'Ahmedabad', 'Jaipur', 'Lucknow', 'Chandigarh', 'Agra',
-    'Surat', 'Nagpur', 'Indore', 'Vadodara', 'Udaipur', 'Bhopal',
-    'Goa', 'Dehradun', 'Amritsar', 'Jodhpur', 'Kochi', 'Mysuru',
-    'Nashik', 'Mathura', 'Gurgaon', 'Noida', 'Faridabad', 'Ghaziabad',
-];
+import { searchCities, City } from '../../lib/tripData';
 
 const CONNECTOR_TYPES = ['CCS2', 'Type2', 'CHAdeMO'];
 
@@ -21,31 +14,26 @@ export default function TripForm({ onPlanTrip, isLoading }: TripFormProps) {
     const [endCity, setEndCity] = useState('');
     const [vehicleRange, setVehicleRange] = useState(300);
     const [selectedConnectors, setSelectedConnectors] = useState<string[]>(['CCS2']);
-    const [startSuggestions, setStartSuggestions] = useState<string[]>([]);
-    const [endSuggestions, setEndSuggestions] = useState<string[]>([]);
+    const [startSuggestions, setStartSuggestions] = useState<City[]>([]);
+    const [endSuggestions, setEndSuggestions] = useState<City[]>([]);
     const [showStartDropdown, setShowStartDropdown] = useState(false);
     const [showEndDropdown, setShowEndDropdown] = useState(false);
 
-    const filterCities = (query: string) => {
-        if (!query.trim()) return [];
-        return INDIAN_CITIES.filter(c => c.toLowerCase().includes(query.toLowerCase())).slice(0, 5);
-    };
-
     const handleStartChange = (val: string) => {
         setStartCity(val);
-        setStartSuggestions(filterCities(val));
+        setStartSuggestions(searchCities(val));
         setShowStartDropdown(true);
     };
 
     const handleEndChange = (val: string) => {
         setEndCity(val);
-        setEndSuggestions(filterCities(val));
+        setEndSuggestions(searchCities(val));
         setShowEndDropdown(true);
     };
 
     const toggleConnector = (c: string) => {
         setSelectedConnectors(prev =>
-            prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]
+            prev.includes(c) ? (prev.length > 1 ? prev.filter(x => x !== c) : prev) : [...prev, c]
         );
     };
 
@@ -82,21 +70,23 @@ export default function TripForm({ onPlanTrip, isLoading }: TripFormProps) {
                             type="text"
                             value={startCity}
                             onChange={(e) => handleStartChange(e.target.value)}
-                            onFocus={() => setShowStartDropdown(true)}
-                            onBlur={() => setTimeout(() => setShowStartDropdown(false), 150)}
-                            placeholder="Starting city (e.g. New Delhi)"
+                            onFocus={() => { setShowStartDropdown(true); setStartSuggestions(searchCities(startCity)); }}
+                            onBlur={() => setTimeout(() => setShowStartDropdown(false), 200)}
+                            placeholder="Starting city (e.g. Bangalore)"
                             className="w-full pl-12 pr-4 py-4 bg-gray-50 rounded-2xl text-sm font-medium text-gray-900 placeholder-gray-400 outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all border border-gray-100"
                         />
                         {showStartDropdown && startSuggestions.length > 0 && (
-                            <div className="absolute left-0 right-0 top-full mt-1 bg-white rounded-xl shadow-xl border border-gray-100 z-30 overflow-hidden">
+                            <div className="absolute left-0 right-0 top-full mt-1 bg-white rounded-xl shadow-xl border border-gray-100 z-30 overflow-hidden max-h-64 overflow-y-auto">
                                 {startSuggestions.map(city => (
                                     <button
-                                        key={city}
+                                        key={city.name + city.state}
                                         type="button"
-                                        onClick={() => { setStartCity(city); setShowStartDropdown(false); }}
-                                        className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+                                        onMouseDown={(e) => e.preventDefault()}
+                                        onClick={() => { setStartCity(city.name); setShowStartDropdown(false); }}
+                                        className="w-full text-left px-4 py-3 text-sm hover:bg-emerald-50 hover:text-emerald-700 transition-colors flex items-center justify-between"
                                     >
-                                        📍 {city}
+                                        <span className="font-medium text-gray-700">📍 {city.name}</span>
+                                        <span className="text-xs text-gray-400">{city.state}</span>
                                     </button>
                                 ))}
                             </div>
@@ -125,21 +115,23 @@ export default function TripForm({ onPlanTrip, isLoading }: TripFormProps) {
                             type="text"
                             value={endCity}
                             onChange={(e) => handleEndChange(e.target.value)}
-                            onFocus={() => setShowEndDropdown(true)}
-                            onBlur={() => setTimeout(() => setShowEndDropdown(false), 150)}
-                            placeholder="Destination city (e.g. Jaipur)"
+                            onFocus={() => { setShowEndDropdown(true); setEndSuggestions(searchCities(endCity)); }}
+                            onBlur={() => setTimeout(() => setShowEndDropdown(false), 200)}
+                            placeholder="Destination city (e.g. Mysuru)"
                             className="w-full pl-12 pr-4 py-4 bg-gray-50 rounded-2xl text-sm font-medium text-gray-900 placeholder-gray-400 outline-none focus:ring-2 focus:ring-cyan-500 focus:bg-white transition-all border border-gray-100"
                         />
                         {showEndDropdown && endSuggestions.length > 0 && (
-                            <div className="absolute left-0 right-0 top-full mt-1 bg-white rounded-xl shadow-xl border border-gray-100 z-30 overflow-hidden">
+                            <div className="absolute left-0 right-0 top-full mt-1 bg-white rounded-xl shadow-xl border border-gray-100 z-30 overflow-hidden max-h-64 overflow-y-auto">
                                 {endSuggestions.map(city => (
                                     <button
-                                        key={city}
+                                        key={city.name + city.state}
                                         type="button"
-                                        onClick={() => { setEndCity(city); setShowEndDropdown(false); }}
-                                        className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-cyan-50 hover:text-cyan-700 transition-colors"
+                                        onMouseDown={(e) => e.preventDefault()}
+                                        onClick={() => { setEndCity(city.name); setShowEndDropdown(false); }}
+                                        className="w-full text-left px-4 py-3 text-sm hover:bg-cyan-50 hover:text-cyan-700 transition-colors flex items-center justify-between"
                                     >
-                                        📍 {city}
+                                        <span className="font-medium text-gray-700">📍 {city.name}</span>
+                                        <span className="text-xs text-gray-400">{city.state}</span>
                                     </button>
                                 ))}
                             </div>
