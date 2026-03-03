@@ -35,7 +35,7 @@ export default function Home() {
                             </h2>
                         </motion.div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <FeatureCard
                                 title="Real-time Availability"
                                 desc="See live status of every charger — available, engaged, or offline — before you drive there."
@@ -59,6 +59,17 @@ export default function Home() {
                                 delay={0.1}
                             />
                             <FeatureCard
+                                title="Trip Planner"
+                                desc="Plan your EV road trip with optimized charging stops along highways. Drive worry-free."
+                                icon={
+                                    <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                                    </svg>
+                                }
+                                color="amber"
+                                delay={0.2}
+                            />
+                            <FeatureCard
                                 title="Secure Payments"
                                 desc="Pay with UPI, Credit Card, or Wallet. Transparent pricing with no hidden fees."
                                 icon={
@@ -67,7 +78,7 @@ export default function Home() {
                                     </svg>
                                 }
                                 color="violet"
-                                delay={0.2}
+                                delay={0.3}
                             />
                         </div>
                     </div>
@@ -166,6 +177,7 @@ export default function Home() {
                             <h4 className="text-white font-semibold mb-4">Product</h4>
                             <div className="space-y-2">
                                 <Link href="/map" className="block text-gray-500 hover:text-gray-300 text-sm">Find Stations</Link>
+                                <Link href="/trip-planner" className="block text-gray-500 hover:text-gray-300 text-sm">Trip Planner</Link>
                                 <Link href="/signup" className="block text-gray-500 hover:text-gray-300 text-sm">Sign Up</Link>
                                 <Link href="/login" className="block text-gray-500 hover:text-gray-300 text-sm">Station Owner Login</Link>
                             </div>
@@ -192,12 +204,14 @@ function FeatureCard({ title, desc, icon, color, delay }: { title: string; desc:
     const colorMap: Record<string, string> = {
         emerald: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/10 text-emerald-400',
         cyan: 'from-cyan-500/20 to-cyan-500/5 border-cyan-500/10 text-cyan-400',
+        amber: 'from-amber-500/20 to-amber-500/5 border-amber-500/10 text-amber-400',
         violet: 'from-violet-500/20 to-violet-500/5 border-violet-500/10 text-violet-400',
     };
 
     const iconBgMap: Record<string, string> = {
         emerald: 'bg-emerald-500/10 text-emerald-400',
         cyan: 'bg-cyan-500/10 text-cyan-400',
+        amber: 'bg-amber-500/10 text-amber-400',
         violet: 'bg-violet-500/10 text-violet-400',
     };
 

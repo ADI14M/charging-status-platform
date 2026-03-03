@@ -34,6 +34,9 @@ export default function Navbar() {
                             <Link href="/map" className={`font-medium transition-colors ${scrolled ? 'text-gray-600 hover:text-emerald-600' : 'text-white/80 hover:text-white'}`}>
                                 Find Station
                             </Link>
+                            <Link href="/trip-planner" className={`font-medium transition-colors ${scrolled ? 'text-gray-600 hover:text-emerald-600' : 'text-white/80 hover:text-white'}`}>
+                                Trip Planner
+                            </Link>
                             <Link href="/#features" className={`font-medium transition-colors ${scrolled ? 'text-gray-600 hover:text-emerald-600' : 'text-white/80 hover:text-white'}`}>
                                 Features
                             </Link>
@@ -74,6 +77,9 @@ export default function Navbar() {
                         <div className="flex flex-col space-y-4">
                             <Link href="/map" onClick={() => setMobileOpen(false)} className="text-white/80 hover:text-white font-medium py-3 border-b border-white/10">
                                 🗺️ Find Station
+                            </Link>
+                            <Link href="/trip-planner" onClick={() => setMobileOpen(false)} className="text-white/80 hover:text-white font-medium py-3 border-b border-white/10">
+                                🛣️ Trip Planner
                             </Link>
                             <Link href="/#features" onClick={() => setMobileOpen(false)} className="text-white/80 hover:text-white font-medium py-3 border-b border-white/10">
                                 ✨ Features
